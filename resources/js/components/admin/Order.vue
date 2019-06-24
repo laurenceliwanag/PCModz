@@ -12,9 +12,28 @@
       <v-flex pl-4 pr-4>
         <v-card class="white">
           <v-card-text class="pt-5 pl-4">
-            <h3 class="mb-2">Customer Name: {{ user.user_name }}</h3>
-            <h3 class="mb-2">Delivery Address: {{ user.user_name }}</h3>
-            <h3>Payment Method: {{ user.user_name }}</h3>
+            <v-layout>
+              <v-flex>
+                <h3 class="mb-2 font-weight-regular">
+                  <strong class="mr-1">Customer Name:</strong>
+                  {{ user.user_name }}
+                </h3>
+                <h3 class="mb-2 font-weight-regular">
+                  <strong class="mr-1">Delivery Address:</strong>
+                  {{ user.user_name }}
+                </h3>
+                <h3 class="font-weight-regular">
+                  <strong class="mr-1">Payment Method:</strong>
+                  {{ user.user_name }}
+                </h3>
+              </v-flex>
+              <v-flex class="text-xs-right">
+                <h3 class="mb-2">
+                  Invoice Number:
+                  <strong class="ml-1 red--text title">{{ invoice }}</strong>
+                </h3>
+              </v-flex>
+            </v-layout>
           </v-card-text>
 
           <v-card-text>
@@ -57,15 +76,40 @@
             </v-list>
           </v-card-text>
 
-          <v-card-text class="text-xs-right">
-            <h3>Total Price: {{ "₱ " + totalprice.toFixed(2).toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",") }}</h3>
+          <v-card-text class="text-xs-right mb-3 mt-2">
+            <v-layout class="mb-2" wrap>
+              <v-flex md10>
+                <h3>Sub Total:</h3>
+              </v-flex>
+              <v-flex>
+                <h3>{{ "₱ " + subtotal.toFixed(2).toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",") }}</h3>
+              </v-flex>
+            </v-layout>
+
+            <v-layout class="mb-2" wrap>
+              <v-flex md10>
+                <h3>VAT:</h3>
+              </v-flex>
+              <v-flex>
+                <h3>{{ "₱ " + vat.toFixed(2).toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",") }}</h3>
+              </v-flex>
+            </v-layout>
+
+            <v-layout wrap>
+              <v-flex md10>
+                <h3>Total:</h3>
+              </v-flex>
+              <v-flex>
+                <h3>{{ "₱ " + totalprice.toFixed(2).toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",") }}</h3>
+              </v-flex>
+            </v-layout>
           </v-card-text>
 
           <v-card-actions>
             <v-btn flat="flat" to="/admin/orders">Go Back</v-btn>
             <v-spacer></v-spacer>
             <v-btn flat="flat">Decline</v-btn>
-            <v-btn flat="flat">Approved</v-btn>
+            <v-btn flat="flat" class="black" dark>Approved</v-btn>
           </v-card-actions>
         </v-card>
       </v-flex>
@@ -80,6 +124,9 @@ export default {
     return {
       orders: [],
       product: [],
+      invoice: 0,
+      subtotal: 0,
+      vat: 0,
       totalprice: 0,
       user: ""
     };
@@ -97,10 +144,14 @@ export default {
         .then(res => res.json())
         .then(res => {
           this.orders = res;
+          console.log(this.orders);
           this.orders.forEach(item => {
             this.totalprice += parseFloat(item.total);
+            this.invoice = item.invoice;
             this.user = item.user;
           });
+          this.vat += parseFloat(this.totalprice * 0.12);
+          this.subtotal += parseFloat(this.totalprice - this.vat);
         })
         .catch(err => console.log(err));
     }
